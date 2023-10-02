@@ -1,13 +1,12 @@
+import 'package:example/category_header_example.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:keymap/keymap.dart';
 
 ///An example showing the keymap working with a dialog
 ///containing text fields.
-void main() => runApp(
-  const MaterialApp(title: 'Dialog Example',
-    home: Material(child: DialogExample())));
-
+void main() => runApp(const MaterialApp(
+    title: 'Dialog Example', home: Material(child: DialogExample())));
 
 class DialogExample extends StatefulWidget {
   const DialogExample({Key? key}) : super(key: key);
@@ -17,26 +16,39 @@ class DialogExample extends StatefulWidget {
 }
 
 class _DialogExampleState extends State<DialogExample> {
-  late List<KeyAction> bindings;
+  late Map<Shortcut, Intention> bindings;
   int count = 0;
 
   @override
   void initState() {
     super.initState();
-    bindings = [
-      KeyAction(LogicalKeyboardKey.keyD, 'open dialog', () {
+    bindings = {
+      const Shortcut(
+        activator: SingleActivator(LogicalKeyboardKey.keyD),
+        description: "open dialog",
+      ): #TempIntent,
+      /*KeyAction(LogicalKeyboardKey.keyD, 'open dialog', () {
         _setEmailAndPassword();
-      }),
-      KeyAction(LogicalKeyboardKey.keyA, 'Add 1', () {
-        setState(() {
-          count++;
-        });
-      },),
-    ];
+      }),*/
+      const Shortcut(
+        activator: SingleActivator(LogicalKeyboardKey.keyA),
+        description: "Add 1",
+      ): #TempIntent,
+      /*const KeyAction(
+        LogicalKeyboardKey.keyA,
+        'Add 1',
+        () {
+          setState(() {
+            count++;
+          });
+        },
+      ),*/
+    };
   }
 
-  Future<void> _setEmailAndPassword() async{
-    showDialog(context: context,
+  Future<void> _setEmailAndPassword() async {
+    showDialog(
+        context: context,
         builder: (context) {
           return AlertDialog(
             title: const Text('Enter email and password'),
@@ -45,9 +57,12 @@ class _DialogExampleState extends State<DialogExample> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  TextField(decoration: InputDecoration(hintText: 'Email'),),
-                  TextField(decoration: InputDecoration(
-                      hintText: 'Password'), obscureText: true,
+                  TextField(
+                    decoration: InputDecoration(hintText: 'Email'),
+                  ),
+                  TextField(
+                    decoration: InputDecoration(hintText: 'Password'),
+                    obscureText: true,
                   )
                 ],
               ),
@@ -67,24 +82,26 @@ class _DialogExampleState extends State<DialogExample> {
               ),
             ],
           );
-        }
-    );
+        });
   }
 
   @override
   Widget build(BuildContext context) {
-    return KeyboardWidget(bindings: bindings,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text('The count is $count'),
-          Center(
-            child: ElevatedButton(
-              onPressed: () { _setEmailAndPassword();},
-              child: const Text('show'),
-            ),
-          )
-        ],
-      ));
+    return KeyboardShortcuts(
+        bindings: bindings,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text('The count is $count'),
+            Center(
+              child: ElevatedButton(
+                onPressed: () {
+                  _setEmailAndPassword();
+                },
+                child: const Text('show'),
+              ),
+            )
+          ],
+        ));
   }
 }

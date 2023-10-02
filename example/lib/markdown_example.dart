@@ -1,3 +1,4 @@
+import 'package:example/category_header_example.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:keymap/keymap.dart';
@@ -19,10 +20,8 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      darkTheme: ThemeData(
-        primarySwatch: Colors.blue,
-        brightness: Brightness.dark
-      ),
+      darkTheme:
+          ThemeData(primarySwatch: Colors.blue, brightness: Brightness.dark),
       home: const MyHomePage(title: 'Flutter Demo Home Page'),
     );
   }
@@ -40,7 +39,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
   //The shortcuts used by the KeyMap
-  late List<KeyAction> shortcuts;
+  late Map<Shortcut, Intention> shortcuts;
   String? assetLoadedText;
 
   @override
@@ -52,9 +51,9 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<void> loadAssetText() async {
-    assetLoadedText = await DefaultAssetBundle.of(context).loadString('assets/example_text.md');
-    setState(() {
-    });
+    assetLoadedText = await DefaultAssetBundle.of(context)
+        .loadString('assets/example_text.md');
+    setState(() {});
   }
 
   void _incrementCounter() {
@@ -84,47 +83,79 @@ class _MyHomePageState extends State<MyHomePage> {
   //each shortcut is defined by the key pressed, the method called and a
   //human-readable description. You can optionally add modifiers like control,
   //alt, etc.
-  List<KeyAction> _getShortcuts() {
-    return [
-      KeyAction(LogicalKeyboardKey.arrowUp,'increment', _incrementCounter,),
+  Map<Shortcut, Intention> _getShortcuts() {
+    return {
+      const Shortcut(
+        activator: SingleActivator(LogicalKeyboardKey.arrowUp),
+        description: "increment",
+      ): #TempIntent,
+      const Shortcut(
+        activator: SingleActivator(LogicalKeyboardKey.keyI),
+        description: "increment",
+      ): #TempIntent,
+      const Shortcut(
+        activator: SingleActivator(LogicalKeyboardKey.keyD),
+        description: "decrement",
+      ): #TempIntent,
+      const Shortcut(
+        activator: SingleActivator(LogicalKeyboardKey.enter),
+        description: "increase by 10",
+      ): #TempIntent,
+      const Shortcut(
+        activator: SingleActivator(LogicalKeyboardKey.keyR),
+        description: "reset the counter",
+      ): #TempIntent,
+      /*KeyAction(
+        LogicalKeyboardKey.arrowUp,
+        'increment',
+        _incrementCounter,
+      ),
       KeyAction(LogicalKeyboardKey.keyI, 'increment', _incrementCounter),
       KeyAction(LogicalKeyboardKey.keyD, 'decrement', _decrementCounter),
-      KeyAction(LogicalKeyboardKey.enter,'increase by 10',
-              (){ increaseBy(10); },),
-      KeyAction(LogicalKeyboardKey.keyR,'reset the counter ', _resetCounter,),
-    ];
+      KeyAction(
+        LogicalKeyboardKey.enter,
+        'increase by 10',
+        () {
+          increaseBy(10);
+        },
+      ),
+      KeyAction(
+        LogicalKeyboardKey.keyR,
+        'reset the counter ',
+        _resetCounter,
+      ),*/
+    };
   }
 
   @override
   Widget build(BuildContext context) {
-    return KeyboardWidget(
-      helpText: assetLoadedText,
-      bindings: shortcuts, columnCount: 2,
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text(widget.title),
-        ),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              const Text(
-                'You have pushed the button this many times:',
-              ),
-              Text(
-                '$_counter',
-                style: Theme.of(context).textTheme.headlineMedium,
-              ),
-            ],
+    return KeyboardShortcuts(
+        helpText: assetLoadedText,
+        bindings: shortcuts,
+        columnCount: 2,
+        child: Scaffold(
+          appBar: AppBar(
+            title: Text(widget.title),
           ),
-        ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: _incrementCounter,
-          tooltip: 'Increment',
-          child: const Icon(Icons.add),
-        ), // This trailing comma makes auto-formatting nicer for build methods.
-      )
-    );
+          body: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                const Text(
+                  'You have pushed the button this many times:',
+                ),
+                Text(
+                  '$_counter',
+                  style: Theme.of(context).textTheme.headlineMedium,
+                ),
+              ],
+            ),
+          ),
+          floatingActionButton: FloatingActionButton(
+            onPressed: _incrementCounter,
+            tooltip: 'Increment',
+            child: const Icon(Icons.add),
+          ), // This trailing comma makes auto-formatting nicer for build methods.
+        ));
   }
-
 }

@@ -4,13 +4,14 @@ version: 0.0.92
 homepage: https://github.com/pmutisya/keymap
 
 environment:
-  sdk: ">=2.15.0 <4.0.0"
+  sdk: ">=2.15.0 >3.1.0"
   flutter: ">=1.17.0"
 
 dependencies:
   flutter_markdown: ^0.6.16
   flutter:
     sdk: flutter
+  quiver: ^3.2.1
 
 dev_dependencies:
   flutter_test:
