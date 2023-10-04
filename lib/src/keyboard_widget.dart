@@ -157,25 +157,24 @@ class KeyboardShortcutsState extends State<KeyboardShortcuts> {
 
   //returns the modifier key as text or a symbol (where possible)
   String _getModifiers(ShortcutActivator shortcut) {
-    bool meta = false, shift = false, alt = false, control = false;
-
-    if (shortcut is SingleActivator) {
-      meta = shortcut.meta;
-      shift = shortcut.shift;
-      alt = shortcut.alt;
-      control = shortcut.control;
-    } else if (shortcut is LogicalKeySet) {
-      meta = shortcut.keys.contains(LogicalKeyboardKey.meta);
-      shift = shortcut.keys.contains(LogicalKeyboardKey.shift);
-      alt = shortcut.keys.contains(LogicalKeyboardKey.alt);
-      control = shortcut.keys.contains(LogicalKeyboardKey.control);
-    } else if (shortcut is CharacterActivator) {
-      meta = shortcut.meta;
-      shift = shortcut.character.toUpperCase() == shortcut.character &&
-          shortcut.character.toLowerCase() != shortcut.character;
-      alt = shortcut.alt;
-      control = shortcut.control;
-    }
+    final (meta, shift, alt, control) = switch (shortcut) {
+      SingleActivator(:final meta, :final shift, :final alt, :final control) =>
+        (meta, shift, alt, control),
+      LogicalKeySet() => (
+          shortcut.keys.contains(LogicalKeyboardKey.meta),
+          shortcut.keys.contains(LogicalKeyboardKey.shift),
+          shortcut.keys.contains(LogicalKeyboardKey.alt),
+          shortcut.keys.contains(LogicalKeyboardKey.control),
+        ),
+      CharacterActivator(
+        :final meta,
+        :final alt,
+        :final control,
+        character: final c,
+      ) =>
+        (meta, c.toUpperCase() == c && c.toLowerCase() != c, alt, control),
+      _ => (false, false, false, false)
+    };
 
     StringBuffer buffer = StringBuffer();
     if (meta) {
