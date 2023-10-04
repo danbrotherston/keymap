@@ -177,7 +177,8 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return KeyboardShortcuts(
         key: _key,
-        showDismissKey: LogicalKeyboardKey.f2,
+        showHelpShortcut: const SingleActivator(LogicalKeyboardKey.f2),
+        hideHelpShortcut: const SingleActivator(LogicalKeyboardKey.f2),
         bindings: shortcuts,
         columnCount: 2,
         child: Scaffold(

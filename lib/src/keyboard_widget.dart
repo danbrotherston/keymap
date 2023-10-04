@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:keymap/keymap.dart';
 import 'package:keymap/src/intent_manager.dart';
 
 typedef Intention = Symbol;
@@ -26,12 +27,14 @@ class KeyboardShortcuts extends StatefulWidget {
   ///The list of keystrokes and methods called
   final Map<Shortcut, Intention> bindings;
 
-  ///The keystroke used to show and dismiss the help screen
-  final LogicalKeyboardKey showDismissKey;
+  ///The [ShortcutActivator] used to show the help screen
+  final ShortcutActivator showHelpShortcut;
+
+  ///The [ShortcutActivator] used to dismiss the help screen
+  final ShortcutActivator hideHelpShortcut;
 
   ///The number of columns of text in the help screen
   final int columnCount;
-  final bool showMap;
   final VoidCallback? callbackOnHide;
 
   ///The color of the surface of the card used to display a help screen.
@@ -72,13 +75,16 @@ class KeyboardShortcuts extends StatefulWidget {
     this.helpText,
     this.hasFocus = true,
     required this.child,
-    this.showDismissKey = LogicalKeyboardKey.f1,
+    this.showHelpShortcut = const SingleActivator(LogicalKeyboardKey.f1),
+    this.hideHelpShortcut = const MultipleActivator(activators: [
+      SingleActivator(LogicalKeyboardKey.f1),
+      SingleActivator(LogicalKeyboardKey.escape),
+    ]),
     this.groupByCategory = false,
     this.columnCount = 1,
     this.backgroundColor,
     this.showLines = false,
     this.textStyle,
-    this.showMap = false,
     this.callbackOnHide,
   })  : assert(columnCount > 0),
         super(key: key);
@@ -89,8 +95,8 @@ class KeyboardShortcuts extends StatefulWidget {
 
 class KeyboardShortcutsState extends State<KeyboardShortcuts> {
   late FocusNode _focusNode;
-  late OverlayEntry _overlayEntry;
-  late bool showingOverlay;
+
+  OverlayEntry? _overlayEntry;
 
   static const Color defaultBackground = Color(0xFF0a0a0a);
   static const Color shadow = Color(0x55000000);
@@ -104,7 +110,6 @@ class KeyboardShortcutsState extends State<KeyboardShortcuts> {
     super.initState();
     _focusNode = FocusNode();
     _focusNode.requestFocus();
-    showingOverlay = widget.showMap;
   }
 
   @override
@@ -567,15 +572,13 @@ class KeyboardShortcutsState extends State<KeyboardShortcuts> {
       autofocus: false, //widget.hasFocus,
       onKey: (FocusNode node, RawKeyEvent event) {
         if (event.runtimeType == RawKeyDownEvent && node.hasPrimaryFocus) {
-          LogicalKeyboardKey key = event.logicalKey;
-
-          if (key == widget.showDismissKey) {
+          if (!showingOverlay &&
+              ShortcutActivator.isActivatedBy(widget.showHelpShortcut, event)) {
             toggleOverlay();
             return KeyEventResult.handled;
-          } else if (key == LogicalKeyboardKey.escape) {
-            if (showingOverlay) {
-              _hideOverlay();
-            }
+          } else if (showingOverlay &&
+              ShortcutActivator.isActivatedBy(widget.hideHelpShortcut, event)) {
+            _hideOverlay();
             return KeyEventResult.handled;
           } else {
             Intention? intent = _findMatch(event);
@@ -596,28 +599,25 @@ class KeyboardShortcutsState extends State<KeyboardShortcuts> {
     );
   }
 
-  void toggleOverlay() {
+  void _showOverlay() {
     setState(() {
-      if (!showingOverlay) {
-        showingOverlay = true;
-        _overlayEntry =
-            widget.groupByCategory ? _buildCategoryOverlay() : _buildOverlay();
-        Overlay.of(context).insert(_overlayEntry);
-      } else {
-        if (showingOverlay) {
-          _hideOverlay();
-        }
-      }
+      _overlayEntry =
+          widget.groupByCategory ? _buildCategoryOverlay() : _buildOverlay();
+      Overlay.of(context).insert(_overlayEntry!);
     });
   }
 
+  bool get showingOverlay => _overlayEntry != null;
+
+  void toggleOverlay() => showingOverlay ? _hideOverlay() : _showOverlay();
+
   void _hideOverlay() {
     setState(() {
-      showingOverlay = false;
-      _overlayEntry.remove();
+      _overlayEntry?.remove();
       if (widget.callbackOnHide != null) {
         widget.callbackOnHide!();
       }
+      _overlayEntry = null;
     });
   }
 }
