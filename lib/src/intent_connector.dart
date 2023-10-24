@@ -3,8 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:keymap/keymap.dart';
 
 class IntentConnector extends StatelessWidget {
-  Widget child;
-  Intention intent;
+  final Widget child;
+  final Intention intent;
+
   IntentConnector({
     required this.child,
     required this.intent,
